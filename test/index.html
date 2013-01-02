@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  	<meta charset="utf-8" />
+  	<link rel="stylesheet" type="text/css" href="css/style.css">
+  	<script type="text/javascript" src="libs/dat.gui.min.js"></script>
+  	<script type="text/javascript" src="js/polyfills.js"></script>
+  	<script type="text/javascript" src="../src/Filters.js"></script>
+</head> 
+<body>
+	<h1 style="width: 60%;">Filterbuddy.js</h1>
+	<h3>Use controls in top right corner to change filter.</h3>
+
+	<div class="display">
+		<p>HTMLVideoElement</p>
+
+		<video id="video" width="320" height="180" controls autoplay loop>
+			<source src="video/big_buck_bunny.webm" type="video/webm" />
+			<source src="video/big_buck_bunny.mp4" type="video/mp4" />
+			<source src="video/big_buck_bunny.ogg" type="video/ogv" />
+			<p>Your browser does not support HTML5 Video.</p>
+		</video>
+
+		<br><br>
+		<p>Result</p>
+		<canvas width="320" height="180" id="canvas" style="background-color: #fff"></canvas>
+	</div>
+
+	<script>
+
+		var filterWorker,
+			supportsWorkers,
+			canvas = document.getElementById('canvas'),
+			ctx = canvas.getContext('2d'),
+			tempCanvas = document.createElement('canvas'),
+			tempCtx = tempCanvas.getContext('2d'),
+			video = document.getElementById('video'),
+			imageData,
+			resultImageData,
+			filterName,
+			filterArgs,
+			gui;
+
+		var changeFilter = function(fn, args){
+			filterName = fn;
+			filterArgs = args || [];
+		}
+
+		var setupControls = function(){
+			gui = new dat.GUI();
+
+			var FilterControls = {};
+
+			FilterControls.none = function(o){
+				changeFilter(null);
+			}
+
+			FilterControls.sephia = function(){
+				changeFilter('sephia');
+			}
+
+			FilterControls.twoChannel = function(){
+				changeFilter('twoChannel');
+			}
+
+			FilterControls.invert = function(){
+				changeFilter('invert');
+			}
+
+			FilterControls.greyscale = function(o){
+				changeFilter('greyscaleCIE');
+			}
+
+			FilterControls.threshold = function(o){
+				changeFilter('threshold', [128]);
+			}
+
+			FilterControls.brightness = function(){
+				changeFilter('brightness', [128]);
+			}
+
+			FilterControls.darken = function(){
+				changeFilter('darken', [128]);
+			}
+
+			FilterControls.tintRed = function(){
+				changeFilter('color', [255]);
+			}
+
+			FilterControls.tintGreen = function(){
+				changeFilter('color', [undefined, 255]);
+			}
+
+			FilterControls.tintBlue = function(){
+				changeFilter('color', [undefined, undefined, 255]);
+			}
+
+			FilterControls.noiseRed = function(){
+				changeFilter('noise', [true, false, false]);
+			}
+
+			FilterControls.noiseGreen = function(){
+				changeFilter('noise', [false, true, false]);
+			}
+
+			FilterControls.noiseBlue = function(){
+				changeFilter('noise', [false, false, true]);
+			}
+
+			gui.add(FilterControls, 'none');
+			gui.add(FilterControls, 'sephia');
+			gui.add(FilterControls, 'twoChannel');
+			gui.add(FilterControls, 'invert');
+			gui.add(FilterControls, 'greyscale');
+			gui.add(FilterControls, 'threshold');
+			gui.add(FilterControls, 'brightness');
+			gui.add(FilterControls, 'darken');
+			gui.add(FilterControls, 'tintRed');
+			gui.add(FilterControls, 'tintGreen');
+			gui.add(FilterControls, 'tintBlue');
+			gui.add(FilterControls, 'noiseRed');
+			gui.add(FilterControls, 'noiseGreen');
+			gui.add(FilterControls, 'noiseBlue');
+		}
+
+		var draw = function(){
+			window.requestAnimationFrame(draw);
+
+			if(video.paused || video.seeking){
+				return;
+			}
+
+			// Draw the video onto the temp canvas
+			tempCtx.drawImage(video, 0, 0, video.width, video.height);
+
+			// Copy the pixels from the temp canvas into an ImageData object
+  			imageData = tempCtx.getImageData(0, 0, video.width, video.height);
+
+  			// If the data has been processed from last cycle, draw it onto the result canvas
+  			if(resultImageData){
+				ctx.putImageData(resultImageData, 0, 0);
+			}
+
+			if(filterName){
+				if(supportsWorkers){
+					filterWorker.postMessage({filterName: filterName, imageData: imageData, args : filterArgs});
+				} else{
+					var args = [imageData];
+
+					for(var i = 0; i < filterArgs.length; i++){
+						args.push(filterArgs[i]);
+					}
+
+					ctx.putImageData(Filters[filterName].apply(null, args), 0, 0);
+				}
+			} else{
+				ctx.drawImage(video, 0, 0, video.width, video.height);
+			}
+		}
+
+		var initWorker = function(){
+			filterWorker = new Worker('../src/FilterWorker.js');
+
+			filterWorker.addEventListener('message', function(e) {
+				resultImageData = e.data;
+			}, false);
+
+			filterWorker.addEventListener('error', function(e) {
+				console.log('filterWorker error', e);
+			}, false);
+		}
+
+		try{
+			supportsWorkers = !!Worker;
+		} catch(e){
+			console.log('Web Workers not supported: Switching to direct mode (slower)');
+		}
+
+		tempCanvas.width = canvas.width;
+		tempCanvas.height = canvas.height;
+		changeFilter('color', [null, 0, 244]);
+
+		setupControls();
+
+		if(supportsWorkers){
+			initWorker();
+		}
+
+		draw();
+
+	</script>
+</body>
+</html>

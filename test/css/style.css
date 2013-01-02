@@ -1,0 +1,25 @@
+body, html { 
+	background: #fff url('../images/body-noise.png') fixed;
+	font: 14px Georgia, serif;  
+	margin: 20px;
+	padding: 0px;
+}
+
+canvas, video{
+	margin: 0px;
+	padding: 0px;
+	border: 1px solid #333333;
+}
+
+.controls{
+	float: left;
+	margin-left: 10px;
+}
+
+.display{
+	float: left;
+}
+
+article, aside, figure, footer, header, hgroup, menu, nav, section { 
+	display: block; 
+}
