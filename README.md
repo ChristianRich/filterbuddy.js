@@ -7,12 +7,19 @@ Filterbuddy.js provides bitmap processing filters for images, video and canvas. 
  
 ### Available filters ###
 
-*
-*
-*
-*
-*
-*
+* greyscale
+* greyscaleCIE (human eye luminance correction)
+* noise
+* tint
+* color
+* sephia
+* twoChannel
+* invert
+* brightness
+* darken
+* threshold
+
+These are base filters and take different parameters which again will create more variations.
 
 ### Usage examples ###
 
