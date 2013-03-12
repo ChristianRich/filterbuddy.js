@@ -7,6 +7,7 @@ var process = function(e){
 		args = data.args || [],
 		filter;
 
+	// A switch statement would be prettier here, but if / else seems to work slightly faster.
 	if(fn == 'greyscale'){
 		filter = Filters.greyscale;
 	} else if(fn == 'greyscaleCIE'){

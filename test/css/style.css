@@ -20,6 +20,16 @@ canvas, video{
 	float: left;
 }
 
+a {
+    text-decoration: none;
+    color: black;
+}
+
+a:hover {
+    text-decoration: none;
+}
+
 article, aside, figure, footer, header, hgroup, menu, nav, section { 
 	display: block; 
 }
+
