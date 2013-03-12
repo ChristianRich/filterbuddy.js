@@ -1,6 +1,8 @@
 filterbuddy.js
 ==============
 
+[Check out the demo](http://lab.bitworks.me/filterbuddy.js/test/)
+
 #### Bitmap processing filters ####
 
 Filterbuddy.js provides bitmap processing filters for images, video and canvas. I strongly advice that these filters are used in conjunction with a HTML5 Web Worker.
