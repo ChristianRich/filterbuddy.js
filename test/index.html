@@ -126,40 +126,40 @@
 			gui.add(FilterControls, 'noiseBlue');
 		}
 
-		var draw = function(){
-			window.requestAnimationFrame(draw);
+var draw = function(){
+    window.requestAnimationFrame(draw);
 
-			if(video.paused || video.seeking){
-				return;
-			}
+    if(video.paused || video.seeking){
+        return;
+    }
 
-			// Draw the video onto the temp canvas
-			tempCtx.drawImage(video, 0, 0, video.width, video.height);
+    // Draw the video onto the temp canvas
+    tempCtx.drawImage(video, 0, 0, video.width, video.height);
 
-			// Copy the pixels from the temp canvas into an ImageData object
-  			imageData = tempCtx.getImageData(0, 0, video.width, video.height);
+    // Copy the pixels from the temp canvas into an ImageData object
+    imageData = tempCtx.getImageData(0, 0, video.width, video.height);
 
-  			// If the data has been processed from last cycle, draw it onto the result canvas
-  			if(resultImageData){
-				ctx.putImageData(resultImageData, 0, 0);
-			}
+    // If the data has been processed from last cycle, draw it onto the result canvas
+    if(resultImageData){
+        ctx.putImageData(resultImageData, 0, 0);
+    }
 
-			if(filterName){
-				if(supportsWorkers){
-					filterWorker.postMessage({filterName: filterName, imageData: imageData, args : filterArgs});
-				} else{
-					var args = [imageData];
+    if(filterName){
+        if(supportsWorkers){
+            filterWorker.postMessage({filterName: filterName, imageData: imageData, args : filterArgs});
+        } else{
+            var args = [imageData];
 
-					for(var i = 0; i < filterArgs.length; i++){
-						args.push(filterArgs[i]);
-					}
+            for(var i = 0; i < filterArgs.length; i++){
+                args.push(filterArgs[i]);
+            }
 
-					ctx.putImageData(Filters[filterName].apply(null, args), 0, 0);
-				}
-			} else{
-				ctx.drawImage(video, 0, 0, video.width, video.height);
-			}
-		}
+            ctx.putImageData(Filters[filterName].apply(null, args), 0, 0);
+        }
+    } else{
+        ctx.drawImage(video, 0, 0, video.width, video.height);
+    }
+}
 
 		var initWorker = function(){
 			filterWorker = new Worker('../src/FilterWorker.js');
